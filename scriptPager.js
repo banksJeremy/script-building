@@ -4,7 +4,10 @@ var util = require("util"),
     path = require("path"),
 
     htmlTemplate = "<!doctype html><head><meta charset=\"utf-8\"><title>" +
-        "Script Page</title><body><noscript>JavaScript is required.</noscript>",
+        "Script Page</title>" +
+        "<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black\">" +
+        "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">"+
+        "<body><noscript>JavaScript is required.</noscript>",
 
     requireCode = "var require = function(filename) {" +
         "if (! (filename in require.loaded)) {" +
