@@ -4,8 +4,8 @@ show: clean base64Redirect.html
 clean:
 	rm *.html
 
-page.html:
-	../scriptPager.js main.coffee foo.js jquery-1.5.0.js > page.html
+scriptPage.html:
+	../scriptPager.js main.coffee jquery-1.5.0.js > scriptPage.html
 
-base64Redirect.html: page.html
-	../base64Redirecter.js page.html > base64Redirect.html
+base64Redirect.html: scriptPage.html
+	../base64Redirecter.js scriptPage.html > base64Redirect.html
