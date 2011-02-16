@@ -3,14 +3,15 @@ var util = require("util"),
     fs = require("fs"),
     path = require("path"),
 
-    htmlTemplate = "<!doctype html><head><meta charset=\"utf-8\"></head><body>",
+    htmlTemplate = "<!doctype html><head><meta charset=\"utf-8\"><title>" +
+        "</title></head><body><noscript>JavaScript is required.</noscript>",
 
     requireCode = "var require = function(filename) {" +
         "if (! (filename in require.loaded)) {" +
             "var contents = require.files[filename];" +
             
-            "if (! contents.length) {" +
-                "throw new Error(\"Required file is unavailable: \" + filename);" +
+            "if (! contents) {" +
+                "throw new Error(\"Required file was not compiled: \" + filename);" +
             "};" +
         
             "require.loaded[filename] = contents();" +
@@ -30,9 +31,12 @@ var util = require("util"),
         return "require.files[\"" + escapeDoubleQuotes(filename) + "\"] = " + 
                     "function() { return (function() {" +
                         "var exports = this;" +
-                        "(function() {/*BEGIN*/\n" +
-                            contents.replace(/<\/script>/g, "<\\057script>") +
-                        "\n/*END*/})();" +
+                        "(function() {\n" +
+                        "// BEGIN FILE: " + name + "\n    " +
+                            contents.replace(/<\/script>/g, "<\\057script>").
+                                     replace(/\n/g, "\n    ").
+                                     replace(/\n *$/, "\n") +
+                        "// END FILE: " + name + "\n})();" +
                         "return exports;" +
                     "}).call({});};";
     },
@@ -48,8 +52,8 @@ var util = require("util"),
             parts.push(formatFile(filename, contents));
         };
     
-        for (filename in filenames) {
-            parts.push("require(\"" + escapeDoubleQuotes(filename) + "\");")
+        for (i = 0; i < filenames.length; i += 1) {
+            parts.push("require(\"" + escapeDoubleQuotes(filenames[i]) + "\");")
         };
     
         parts.push("</script>");

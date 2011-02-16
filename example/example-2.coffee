@@ -1,1 +1,1 @@
-require("example-1").main()
+require("./example-1").main()
