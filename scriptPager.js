@@ -1,8 +1,7 @@
 #!/usr/bin/env node
-var process = require("process"),
-    util = require("util"),
+var util = require("util"),
     fs = require("fs"),
-    CoffeeScript = require("./coffeescript-1.0.0").CoffeeScript,
+    path = require("path"),
 
     htmlTemplate = "<!doctype html><head><meta charset=\"utf-8\"></head><body>",
 
@@ -31,9 +30,9 @@ var process = require("process"),
         return "require.files[\"" + escapeDoubleQuotes(filename) + "\"] = " + 
                     "function() { return (function() {" +
                         "var exports = this;" +
-                        "(function() {\n" +
+                        "(function() {/*BEGIN*/\n" +
                             contents.replace(/<\/script>/g, "<\\057script>") +
-                        "\n})();" +
+                        "\n/*END*/})();" +
                         "return exports;" +
                     "}).call({});};";
     },
@@ -43,7 +42,7 @@ var process = require("process"),
     
         parts = ["<script>", requireCode];
   
-        for (i = 0; i < filenames.length, i += 1) {
+        for (i = 0; i < filenames.length; i += 1) {
             filename = filenames[i];
             contents = files[filename];
             parts.push(formatFile(filename, contents));
@@ -66,20 +65,26 @@ var process = require("process"),
             for (i = 2; i < arguments.length; i += 1) {
                 var inputFilename = arguments[i],
                     lastDotIndex = inputFilename.lastIndexOf("."),
-                    filename = inputFilename.substr(0, lastDotIndex),
+                    filename = path.normalize(inputFilename.substr(0, lastDotIndex)),
                     extension = inputFilename.substr(lastDotIndex + 1);
+                
+                if (filename.substr(0, 3) !== "../") {
+                    filename = "./" + filename;
+                };
                 
                 filenames.push(filename);
                 
                 if (extension == "js") {
-                    files[filename] = fs.readFileSync(inputFilename);
-                } else if (extension == "js") {
-                    files[filename] = fs.readFileSync(inputFilename);
+                    files[filename] = fs.readFileSync(inputFilename, "utf-8");
+                } else if (extension == "coffee") {
+                    files[filename] = require("./coffeescript-1.0.0").
+                        CoffeeScript.
+                        compile(fs.readFileSync(inputFilename, "utf-8"));
                 } else {
-                    throw new Exception "Unknown file extension: " + extension;
+                    throw new Exception("Unknown file extension: " + extension);
                 };
             };
-        
+            
             return htmlTemplate + formatScript(filenames, files);
         } else if (arguments.length === 2) {
             return ["Usage:", arguments[0], arguments[1], "filenames..."].join(" ");
