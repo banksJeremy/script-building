@@ -4,7 +4,7 @@ var util = require("util"),
     path = require("path"),
 
     htmlTemplate = "<!doctype html><head><meta charset=\"utf-8\"><title>" +
-        "Script Page</title>" +
+        "Script</title>" +
         "<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black\">" +
         "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">"+
         "<body><noscript>JavaScript is required.</noscript>",
