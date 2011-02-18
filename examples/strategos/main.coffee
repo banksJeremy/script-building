@@ -11,7 +11,7 @@ jQuery ($) ->
     
     game = new strategos.Game canvas[0]
     
-    game.draw()
+    setInterval (-> game.draw()), 50
     
     null
 
