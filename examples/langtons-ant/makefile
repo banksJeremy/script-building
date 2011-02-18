@@ -7,7 +7,7 @@ clean:
 	rm -f *.html
 
 scriptPage.html:
-	../scriptPager.js $(FILES) > scriptPage.html
+	../../scriptPager.js $(FILES) > scriptPage.html
 
 dataRedirect.html: scriptPage.html
-	../dataRedirecter.js scriptPage.html > dataRedirect.html
+	../../dataRedirecter.js scriptPage.html > dataRedirect.html
