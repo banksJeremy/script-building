@@ -6,8 +6,9 @@
       size = 48;
       document.body.innerHTML = "<canvas width=" + size + " height=" + size + ">";
       canvas = document.getElementsByTagName("canvas")[0];
-      document.body.style.background = canvas.style.background = "black";
+      canvas.style.background = "black";
       document.body.style.color = canvas.style.color = "white";
+      document.body.style.background = "url(" + (require("./image.png")) + ")";
       canvas.style.width = "100%";
       canvas.style.color = "rgba(225, 200, 175, 1)";
       _ref = require("./langton"), AntSim = _ref.AntSim, Turtle = _ref.Turtle;
@@ -123,4 +124,8 @@
       })();
     }).call(this);
 // END FILE: ./langton
-})();return exports;}).call({});};require("./main");require("./langton");</script>
+})();return exports;}).call({});};require.files["./image.png"] = function() { return (function() {var exports = this;(function() {
+// BEGIN FILE: ./image.png
+    exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABsUlEQVQ4jdWTSUtbYRSGH831JlGjNM4xiUajXhdFtFYcqDTQBqsgpTR0I1RoF64FF4KIrvwH3bZuW/wDFjRuXLZOGHHRcrl1aKxT5puBrwtxVijYjQfO5hve874PnCxAcIfKvsvn/yIg3XYx5PPQ7CoiqcfxL6vM+Nf+zUGBJZ+Oxw8pLSlEkgSSyFBWYOKR4sRkzLlRRFzsro4WEVJnxeve9rOzge5GsfFxWNTaS8TV9wZg4lRpamoU36sXuGyFWA1R2hy5PHMX0+awUp5vxFXjpE5pYPF74DIDg5SNLMt4vU9xV9vRj37RrDhQ5Cj6zh7pSIp0OER3vR2rLYcPZhPJZIp0JnMS4e07r4ilvglFqb1m8Wp3tjSIhLYg3g++OY8gyxKRsE5lhZNKWznrgc0bYfna3Sg1FQR+buFfXGJrO3gZ4urKnJj/+uXW6bMjfeLzmO86xL7+Vj5NT+K0V/HAksfL561oqsYP7TcAPfVljHsasZhkDEYjnidNHMdTqNv7JxATiTi7uyo72gF6JEP86JDjcOzM+mEsyUYwzMpeFF0Okjab+bMfAiCLe79MfwGlkrT30Sb8lAAAAABJRU5ErkJggg==";
+// END FILE: ./image.png
+})();return exports;}).call({});};require("./main");require("./langton");require("./image.png");</script>
