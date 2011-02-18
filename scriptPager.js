@@ -66,11 +66,13 @@ var util = require("util"),
     stdFiles = {
         "--jq": {
             name: "jQuery",
-            path: path.join(path.dirname(process.argv[1]), "lib/jquery-1.5.0.js"),
+            path: path.join(path.dirname(fs.realpathSync(process.argv[1])),
+                            "lib/jquery-1.5.0.js"),
             extension: "js" },
         "--cs": {
             name: "CoffeeScript",
-            path: path.join(path.dirname(process.argv[1]), "lib/coffeescript-1.0.0.js"),
+            path: path.join(path.dirname(fs.realpathSync(process.argv[1])),
+                            "lib/coffeescript-1.0.0.js"),
             extension: "js" }, },
     
     main = function() {
