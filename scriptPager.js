@@ -1,16 +1,4 @@
 #!/usr/bin/env node
-/*
-    $ ./scriptPager.js input1.js input2.coffee... > output.html
-    
-    Given JavaScript and CoffeeScript files, produce a web page containing
-    all of them. They can access each other's exports through the function
-    require(). They are evaluated in the order listed unless require()d 
-    out-of-order.
-    
-    jQuery and CoffeeScript modules are available with the flags "--jq" and
-    "--cs".
-*/
-
 var util = require("util"),
     fs = require("fs"),
     path = require("path"),
