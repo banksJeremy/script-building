@@ -1,7 +1,7 @@
-FILES=main.coffee
+FILES=main.coffee langton.coffee
 
-show: clean base64Redirect.html
-	open base64Redirect.html
+show: clean scriptPage.html base64Redirect.html
+	open scriptPage.html
 
 clean:
 	rm *.html
