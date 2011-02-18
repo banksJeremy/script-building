@@ -1,4 +1,11 @@
 #!/usr/bin/env node
+/*
+    $ ./dataRedirecter.js input > output
+    
+    Given a file, produces an HTML page redirecting to a data: URL with the
+    content of that file.
+*/
+
 var fs = require("fs"),
     
     extensionMimes = {
@@ -20,8 +27,8 @@ var fs = require("fs"),
     
     redirectingHTML = function(url) {
         return "<!doctype html><html><head><meta charset=\"utf-8\">" + 
-            "<title>Redirecting...</title><meta http-equiv=\"refresh\" " +
-            "content=\"0;url=" + url + "\"><body>Redirecting...";
+            "<title>Loading...</title><meta http-equiv=\"refresh\" " +
+            "content=\"0;url=" + url + "\"><body>Loading...";
     };
 
 if (filename) {

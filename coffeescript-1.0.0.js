@@ -4153,3 +4153,5 @@ if (typeof module !== 'undefined' && require.main === module) {
 };
   return require['./coffee-script']
 }()
+
+exports = this.CoffeeScript;

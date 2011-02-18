@@ -1,4 +1,16 @@
 #!/usr/bin/env node
+/*
+    $ ./scriptPager.js input1.js input2.coffee... > output.html
+    
+    Given JavaScript and CoffeeScript files, produce a web page containing
+    all of them. They can access each other's exports through the function
+    require(). They are evaluated in the order listed unless require()d 
+    out-of-order.
+    
+    jQuery and CoffeeScript modules are available with the flags "--jq" and
+    "--cs".
+*/
+
 var util = require("util"),
     fs = require("fs"),
     path = require("path"),
@@ -63,19 +75,34 @@ var util = require("util"),
         return parts.join("");
     },
     
+    stdFiles = {
+        "--jq": {
+            name: "jQuery",
+            path: path.join(path.dirname(process.argv[1]), "jquery-1.5.0.js"),
+            extension: "js" },
+        "--cs": {
+            name: "CoffeeScript",
+            path: path.join(path.dirname(process.argv[1]), "coffeescript-1.0.0.js"),
+            extension: "js" }, },
+    
     main = function() {
         if (arguments.length > 2) {
             var i,
                 files = {};
                 filenames = [];
-        
+            
             for (i = 2; i < arguments.length; i += 1) {
                 var inputFilename = arguments[i],
                     lastDotIndex = inputFilename.lastIndexOf("."),
                     filename = path.normalize(inputFilename.substr(0, lastDotIndex)),
                     extension = inputFilename.substr(lastDotIndex + 1);
                 
-                if (filename.substr(0, 3) !== "../") {
+                if (inputFilename in stdFiles) {
+                    file = stdFiles[inputFilename];
+                    filename = file.name;
+                    inputFilename = file.path;
+                    extension = file.extension;
+                } else if (filename.substr(0, 3) !== "../") {
                     filename = "./" + filename;
                 };
                 
@@ -88,7 +115,7 @@ var util = require("util"),
                         CoffeeScript.
                         compile(fs.readFileSync(inputFilename, "utf-8"));
                 } else {
-                    throw new Exception("Unknown file extension: " + extension);
+                    throw new Error("Unknown file extension: " + extension);
                 };
             };
             

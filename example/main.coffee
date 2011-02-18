@@ -15,8 +15,10 @@ canvas.style.color = "rgba(225, 200, 175, 1)"
 {AntSim, Turtle} = require("./langton")
 
 sim = new AntSim canvas, size
+
 sim.turtles = [
     new Turtle -5, -7, 0
     new Turtle  5, 8, 2
 ]
+
 sim.run()
