@@ -1,126 +1,177 @@
 #!/usr/bin/env node
 var util = require("util"),
     fs = require("fs"),
-    path = require("path"),
+    path = require("path");
 
-    htmlTemplate = "<!doctype html><head><meta charset=\"utf-8\"><title>" +
-        "Script</title>" +
-        "<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black\">" +
-        "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">"+
-        "<body><noscript>JavaScript is required.</noscript>",
+var scriptRelPath = function(s) {
+    return path.join(path.dirname(fs.realpathSync(process.argv[1])), s);
+};
 
-    requireCode = "var require = function(filename) {" +
-        "if (! (filename in require.loaded)) {" +
-            "var contents = require.files[filename];" +
-            
-            "if (! contents) {" +
-                "throw new Error(\"Required file was not compiled: \" + filename);" +
-            "};" +
-        
-            "require.loaded[filename] = contents();" +
-        "};" +
-        
-        "return require.loaded[filename];" +
-    "};" +
+var stdFiles = {
+    "--jQuery": {
+        name: "jQuery",
+        path: scriptRelPath("./lib/coffeescript-1.0.0") },
     
-    "require.files = {};" +
-    "require.loaded = {};",
+    "--CoffeeScript": {
+        name: "CoffeeScript",
+        path: scriptRelPath("./lib/coffeescript-1.0.0") },
+    
+    "--underscore": {
+        name: "underscore",
+        path: scriptRelPath("./lib/underscore-1.1.4.js")},
+};
 
-    escapeDoubleQuotes = function(s) {
-        return s.replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
-    },
-    
-    formatFile = function(name, contents) {
-        return "require.files[\"" + escapeDoubleQuotes(filename) + "\"] = " + 
-                    "function() { return (function() {" +
-                        "var exports = this;" +
-                        "(function() {\n" +
-                        "// BEGIN FILE: " + name + "\n    " +
-                            contents.replace(/<\/script>/g, "<\\057script>").
-                                     replace(/\n/g, "\n    ").
-                                     replace(/\n *$/, "\n") +
-                        "// END FILE: " + name + "\n})();" +
-                        "return exports;" +
-                    "}).call({});};";
-    },
+var debuggable = false;
+// if false then whitespace is collapsed.
 
-    formatScript = function(filenames, files) {
-        var contents, i;
-    
-        parts = ["<script>", requireCode];
-  
-        for (i = 0; i < filenames.length; i += 1) {
-            filename = filenames[i];
-            contents = files[filename];
-            parts.push(formatFile(filename, contents));
-        };
-    
-        for (i = 0; i < filenames.length; i += 1) {
-            parts.push("require(\"" + escapeDoubleQuotes(filenames[i]) + "\");")
-        };
-    
-        parts.push("</script>");
-        return parts.join("");
-    },
-    
-    stdFiles = {
-        "--jq": {
-            name: "jQuery",
-            path: path.join(path.dirname(fs.realpathSync(process.argv[1])),
-                            "lib/jquery-1.5.0.js"),
-            extension: "js" },
-        "--cs": {
-            name: "CoffeeScript",
-            path: path.join(path.dirname(fs.realpathSync(process.argv[1])),
-                            "lib/coffeescript-1.0.0.js"),
-            extension: "js" }, },
-    
-    main = function() {
-        if (arguments.length > 2) {
-            var i,
-                files = {};
-                filenames = [];
-            
-            for (i = 2; i < arguments.length; i += 1) {
-                var inputFilename = arguments[i],
-                    lastDotIndex = inputFilename.lastIndexOf("."),
-                    filename = path.normalize(inputFilename.substr(0, lastDotIndex)),
-                    extension = inputFilename.substr(lastDotIndex + 1);
+var doubleQuote = function(s) {
+    return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + '"';
+};
+
+var templateStart =
+    '<!doctype html><html>' + 
+    '<head>' +
+        '<meta charset="utf-8">' +
+        '<title>Script</title>' +
+        '<meta name="apple-mobile-web-app-status-bar-style" content="black">' +
+        '<meta name="apple-mobile-web-app-capable" content="yes">' +
+    '<body>' +
+        '<noscript>JavaScript is required.</noscript>' +
+        '<script>' +
+            'var require = function(name) {' +
+                'if (name in require.modules) {' +
+                    'var module = require.modules[name];' +
                 
-                if (inputFilename in stdFiles) {
-                    file = stdFiles[inputFilename];
-                    filename = file.name;
-                    inputFilename = file.path;
-                    extension = file.extension;
-                } else if (filename.substr(0, 3) !== "../") {
+                    'if (module.exported !== undefined) {' +
+                        'return module.exported;' +
+                    '} else {' +
+                        'return module.exported = module.load();' +
+                    '}' +
+                '} else {' +
+                    'throw new Error("Required file was not compiled: " + name);' +
+                '}' +
+            '};' +
+        
+            'require.modules = {};' +
+        '</script>';
+
+var templateScript = function(name, source) {
+    var quotedName = doubleQuote(name),
+        preparedSource = source.replace(/<\/script>/g, "<\\057script>");
+    
+    if (! debuggable) {
+        // collapse whitespace around newlines
+        preparedSource = preparedSource.replace(/[ \t]*\n\s*/g, "")
+    } else {
+        preparedSource = "\n// --- begin file: " + name + "\n    " + preparedSource.replace(/\n/, "\n    ") + "// --- end file: " + name + "\n";
+    };
+                 
+    return (
+        '(function() {' +
+            'var module = {' +
+                'id: ' + quotedName + ',' +
+                'load: function() {' +
+                    'var exports = {};' +
+                
+                    '(function() {' +
+                        preparedSource +
+                    '})(exports);' +
+                
+                    'return exports;' +
+                '}' +
+            '};' +
+            
+            'require.modules[module.id] = module;' +
+        '})();');
+};
+
+var deduplicate = function(array) {
+    var result = [],
+        added = {};
+    
+    for (var i = 0; i < array.length; i += 1) {
+        if (! (array[i] in added)) {
+            result.push(array[i]);
+            added[array[i]] = true;
+        };
+    };
+    
+    return result;
+};
+
+var templatePage = function(filenames, files) {
+    filenames = deduplicate(filenames);
+    
+    var parts = [templateStart, "<script>"];
+    
+    for (var i = 0; i < filenames.length; i += 1) {
+        var filename = filenames[i];
+        parts.push(templateScript(filename, files[filename]));
+    };
+    
+    for (var i = 0; i < filenames.length; i += 1) {
+        var filename = filenames[i];
+        parts.push('require(' + doubleQuote(filename) + ');');
+    };
+    
+    parts.push('</script>');
+    
+    return parts.join("");
+};
+
+var main = function() {
+    if (arguments.length) {
+        var files = {}, filenames = [];
+        
+        for (var i = 0; i < arguments.length; i += 1) {
+            var filename = arguments[i];
+            
+            if (filename in stdFiles) {
+                var file = stdFiles[filename];
+                
+                files[file.name] = fs.readFileSync(file.path);
+                filenames.push(file.name);
+            } else {
+                filename = path.normalize(filename);
+                
+                if (filename.substr(0, 3) != "../") {
                     filename = "./" + filename;
-                    inputFilename = "./" + inputFilename;
                 };
                 
-                if (extension == "js") {
-                    files[filename] = fs.readFileSync(inputFilename, "utf-8");
-                } else if (extension == "coffee") {
-                    files[filename] = require("./lib/coffeescript-1.0.0").
-                        CoffeeScript.
-                        compile(fs.readFileSync(inputFilename, "utf-8"));
-                } else {
-                    mime = {
-                        "png": "image/png"
-                    }[extension] || "application/octet-stream"
+                var lastDotIndex = filename.lastIndexOf("."),
+                    extension = filename.substr(lastDotIndex + 1);
+                
+                if ({coffee: true, js: true}[extension]) {
+                    var textContent = fs.readFileSync(filename, "utf-8");
                     
-                    files[filename = inputFilename] = "exports = \"data:" + mime + ";base64," + fs.readFileSync(inputFilename).toString("base64") + "\";\n";
+                    /* strip extension from includable scripts */
+                    filename = filename.substr(0, lastDotIndex);
+                    
+                    if (extension == "coffee") {
+                        textContent = require(stdFiles["--CoffeeScript"].path).CoffeeScript.compile(textContent);
+                    };
+                    
+                    files[filename] = textContent;
+                } else {
+                    var base64Content = fs.readFileSync(filename, "base64");
+                    
+                    var mime = {
+                        "png": "image/png"
+                    }[extension] || "application/octet-stream";
+                    
+                    files[filename] = "exports = \"data:" + mime + ";base64," + base64Content + "\";";
                 };
                 
                 filenames.push(filename);
             };
-            
-            return htmlTemplate + formatScript(filenames, files);
-        } else if (arguments.length === 2) {
-            return ["Usage:", arguments[0], arguments[1], "filenames..."].join(" ");
-        } else {
-            return ["Usage:", arguments[0], "filenames..."].join(" ");
         };
+        
+        process.stdout.write(templatePage(filenames, files));
+    } else {
+        process.stderr.write(["Usage:", process.argv[0], process.argv[1],
+                              "[--flags]", "files...", ">", "output.html"]
+                             .join(" ") + "\n");
     };
-    
+};
 
-console.log(main.apply(this, process.argv));
+main.apply(this, process.argv.slice(2));
