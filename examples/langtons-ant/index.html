@@ -1,5 +1,5 @@
-<!doctype html><head><meta charset="utf-8"><title>Script</title><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-capable" content="yes"><body><noscript>JavaScript is required.</noscript><script>var require = function(filename) {if (! (filename in require.loaded)) {var contents = require.files[filename];if (! contents) {throw new Error("Required file was not compiled: " + filename);};require.loaded[filename] = contents();};return require.loaded[filename];};require.files = {};require.loaded = {};require.files["./main"] = function() { return (function() {var exports = this;(function() {
-// BEGIN FILE: ./main
+<!doctype html><html><head><meta charset="utf-8"><title>Script</title><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="apple-mobile-web-app-capable" content="yes"><body><noscript>JavaScript is required.</noscript><script>var require = function(name) {if (name in require.modules) {var module = require.modules[name];if (module.exported !== undefined) {return module.exported;} else {return module.exported = module.load();}} else {throw new Error("Required file was not compiled: " + name);}};require.modules = {};</script><script>(function() {var module = {id: "./main",load: function() {var exports = {};(function() {
+/* --- begin file: ./main --- */
     (function() {
       var Ant, AntSim, canvas, sim, size, _ref;
       document.title = "Langton's Ant";
@@ -15,9 +15,9 @@
       sim.ants = [new Ant(-5, -7, 0, "rgba(0, 128, 255, .75)"), new Ant(5, 8, 2, "rgba(255, 0, 128, .75)")];
       sim.run();
     }).call(this);
-// END FILE: ./main
-})();return exports;}).call({});};require.files["./langton"] = function() { return (function() {var exports = this;(function() {
-// BEGIN FILE: ./langton
+/* --- end file: ./main --- */
+})(exports);return exports;}};require.modules[module.id] = module;})();(function() {var module = {id: "./langton",load: function() {var exports = {};(function() {
+/* --- begin file: ./langton --- */
     (function() {
       var Ant, DOWN, LEFT, LangtonAntSim, RIGHT, UP, _ref;
       var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -62,7 +62,7 @@
         };
         LangtonAntSim.prototype.draw = function(x, y) {
           var ant, _i, _len, _ref, _ref2, _ref3, _ref4, _ref5, _results;
-          this.graphics.fillStyle = "rgba(0, 0, 0, .5)";
+          this.graphics.fillStyle = "rgba(0, 0, 0, .6)";
           this.graphics.fillRect(0, 0, this.width, this.height);
           for (x = _ref = -this.width / 2, _ref2 = this.width / 2; (_ref <= _ref2 ? x < _ref2 : x > _ref2); (_ref <= _ref2 ? x += 1 : x -= 1)) {
             for (y = _ref3 = -this.height / 2, _ref4 = this.height / 2; (_ref3 <= _ref4 ? y < _ref4 : y > _ref4); (_ref3 <= _ref4 ? y += 1 : y -= 1)) {
@@ -122,5 +122,5 @@
         return LangtonAntSim;
       })();
     }).call(this);
-// END FILE: ./langton
-})();return exports;}).call({});};require("./main");require("./langton");</script>
+/* --- end file: ./langton --- */
+})(exports);return exports;}};require.modules[module.id] = module;})();require("./main");require("./langton");</script>
