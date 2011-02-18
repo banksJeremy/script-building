@@ -3,6 +3,9 @@ var util = require("util"),
     fs = require("fs"),
     path = require("path");
 
+var debuggable = true;
+// set to false when --data
+
 var scriptRelPath = function(s) {
     return path.join(path.dirname(fs.realpathSync(process.argv[1])), s);
 };
@@ -10,19 +13,16 @@ var scriptRelPath = function(s) {
 var stdFiles = {
     "--jQuery": {
         name: "jQuery",
-        path: scriptRelPath("./lib/coffeescript-1.0.0") },
+        path: scriptRelPath("./lib/jquery-1.5.0.js") },
     
     "--CoffeeScript": {
         name: "CoffeeScript",
-        path: scriptRelPath("./lib/coffeescript-1.0.0") },
+        path: scriptRelPath("./lib/coffeescript-1.0.0.js") },
     
     "--underscore": {
         name: "underscore",
         path: scriptRelPath("./lib/underscore-1.1.4.js")},
 };
-
-var debuggable = false;
-// if false then whitespace is collapsed.
 
 var doubleQuote = function(s) {
     return '"' + s.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + '"';
@@ -61,9 +61,10 @@ var templateScript = function(name, source) {
     
     if (! debuggable) {
         // collapse whitespace around newlines
-        preparedSource = preparedSource.replace(/[ \t]*\n\s*/g, "")
+        preparedSource = preparedSource.replace(/[ \t]*[\n$^]\s*/g, "")
     } else {
-        preparedSource = "\n// --- begin file: " + name + "\n    " + preparedSource.replace(/\n/, "\n    ") + "// --- end file: " + name + "\n";
+        // indent files and comment with filenames
+        preparedSource = "\n/* --- begin file: " + name + " --- */\n    " + preparedSource.replace(/\n/g, "\n    ").replace(/\n? *$/, "\n") + "/* --- end file: " + name + " --- */\n";
     };
                  
     return (
@@ -114,14 +115,25 @@ var templatePage = function(filenames, files) {
         parts.push('require(' + doubleQuote(filename) + ');');
     };
     
-    parts.push('</script>');
+    parts.push('</script>\n');
     
     return parts.join("");
 };
 
 var main = function() {
     if (arguments.length) {
-        var files = {}, filenames = [];
+        var files = {}, filenames = [], asData = false;
+        
+        arguments = Array.prototype.slice.call(arguments).filter(function(argument) {
+            if (argument == "--data") {
+                asData = true;
+                debuggable = false;
+                
+                return false;
+            } else {
+                return true;
+            };
+        });
         
         for (var i = 0; i < arguments.length; i += 1) {
             var filename = arguments[i];
@@ -129,7 +141,7 @@ var main = function() {
             if (filename in stdFiles) {
                 var file = stdFiles[filename];
                 
-                files[file.name] = fs.readFileSync(file.path);
+                files[file.name] = fs.readFileSync(file.path, "utf-8");
                 filenames.push(file.name);
             } else {
                 filename = path.normalize(filename);
@@ -166,11 +178,29 @@ var main = function() {
             };
         };
         
-        process.stdout.write(templatePage(filenames, files));
+        var page = templatePage(filenames, files);
+        
+        if (asData) {
+            process.stdout.write("data:text/html;base64," + (new Buffer(page)).toString("base64"));
+            
+            // You can use URL encoding the URL and leave it as utf-8 instead
+            // of base64 encoding it, but this actually made my filesizes
+            // larger, not smaller. The code was this:
+            // 
+            // process.stdout.write("data:text/html;charset=utf-8," + encodeURIComponent(page));
+        } else {
+            process.stdout.write(page);
+        };
     } else {
-        process.stderr.write(["Usage:", process.argv[0], process.argv[1],
+        process.stdout.write(["Usage:", path.basename(process.argv[1]),
                               "[--flags]", "files...", ">", "output.html"]
                              .join(" ") + "\n");
+        process.stdout.write("\n");
+        process.stdout.write(" --data           Encode output as a data: URL.\n");
+        process.stdout.write(" --jQuery         Compile-in jQuery standard module.\n");
+        process.stdout.write(" --CoffeeScript   Compile-in CoffeeScript standard module.\n");
+        process.stdout.write(" --underscore     Compile-in underscore.js standard module.\n");
+        
     };
 };
 
