@@ -6,8 +6,11 @@ document.body.innerHTML =
 
 canvas = document.getElementsByTagName("canvas")[0]
 
-document.body.style.background = canvas.style.background = "black"
-document.body.style.color      = canvas.style.color      = "white"
+canvas.style.background = "black"
+
+document.body.style.color = canvas.style.color = "white"
+
+document.body.style.background = "url(#{require("./image.png")})"
 
 canvas.style.width = "100%"
 canvas.style.color = "rgba(225, 200, 175, 1)"

@@ -1,11 +1,4 @@
 #!/usr/bin/env node
-/*
-    $ ./dataRedirecter.js input > output
-    
-    Given a file, produces an HTML page redirecting to a data: URL with the
-    content of that file.
-*/
-
 var fs = require("fs"),
     
     extensionMimes = {
