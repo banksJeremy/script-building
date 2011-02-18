@@ -1,4 +1,4 @@
-FILES=main.coffee langton.coffee
+FILES=main.coffee --jQuery --CoffeeScript --underscore
 
 show: clean index.html
 	open index.html

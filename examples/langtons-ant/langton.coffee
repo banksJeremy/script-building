@@ -28,7 +28,7 @@ exports.AntSim = class LangtonAntSim
     
     draw: (x, y) ->
         # fade current display
-        @graphics.fillStyle = "rgba(0, 0, 0, .5)"
+        @graphics.fillStyle = "rgba(0, 0, 0, .6)"
         @graphics.fillRect 0, 0, @width, @height
         
         # draw current cell
