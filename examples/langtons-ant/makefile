@@ -1,4 +1,4 @@
-FILES=main.coffee langton.coffee image.png
+FILES=main.coffee langton.coffee
 
 show: clean scriptPage.html dataRedirect.html
 	open scriptPage.html

@@ -1,7 +1,7 @@
 [UP, RIGHT, DOWN, LEFT] = [0..3]
 
-exports.Turtle = class Turtle
-    constructor: (@x = 0, @y = 0, @direction = 0) ->
+exports.Ant = class Ant
+    constructor: (@x = 0, @y = 0, @direction = 0, @color = "rgba(0, 128, 255, .5)") ->
     
     turn: (direction) ->
         @direction = (@direction + 4 + direction) % 4
@@ -12,7 +12,7 @@ exports.AntSim = class LangtonAntSim
     
     constructor: (@canvas, @width, @height = @width) ->
         @graphics = @canvas.getContext "2d"
-        @turtles = [ new Turtle ]
+        @ants = [ new Ant ]
         
         null
     
@@ -37,34 +37,24 @@ exports.AntSim = class LangtonAntSim
                 if @cell(x, y)
                     @drawPixel x, y
         
-        # draw turtles
-        for turtle in @turtles
-            @drawPixel turtle.x, turtle.y, "rgba(0, 128, 255, .5)"
-            
-            if turtle.direction is UP
-                @drawPixel turtle.x, turtle.y + 1, "rgba(0, 128, 255, .25)"
-            else if turtle.direction is RIGHT
-                @drawPixel turtle.x + 1, turtle.y, "rgba(0, 128, 255, .25)"
-            else if turtle.direction is DOWN
-                @drawPixel turtle.x, turtle.y - 1, "rgba(0, 128, 255, .25)"
-            else if turtle.direction is LEFT
-                @drawPixel turtle.x - 1, turtle.y, "rgba(0, 128, 255, .25)"
-            
-    
+        # draw ants
+        for ant in @ants
+            @drawPixel ant.x, ant.y, ant.color
+        
     advance: ->
-        for turtle in @turtles
-            turtle.turn if @cell(turtle.x, turtle.y) then +1 else -1
+        for ant in @ants
+            ant.turn if @cell(ant.x, ant.y) then +1 else -1
             
-            @cell turtle.x, turtle.y, (not @cell turtle.x, turtle.y)
+            @cell ant.x, ant.y, (not @cell ant.x, ant.y)
             
-            if turtle.direction is UP
-                turtle.y += 1
-            else if turtle.direction is RIGHT
-                turtle.x += 1
-            else if turtle.direction is DOWN
-                turtle.y -= 1
-            else if turtle.direction is LEFT
-                turtle.x -= 1
+            if ant.direction is UP
+                ant.y += 1
+            else if ant.direction is RIGHT
+                ant.x += 1
+            else if ant.direction is DOWN
+                ant.y -= 1
+            else if ant.direction is LEFT
+                ant.x -= 1
         
         null
     
