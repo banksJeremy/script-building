@@ -41,7 +41,7 @@ var util = require("util"),
     escapeDoubleQuotes = function(s) {
         return s.replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
     },
-
+    
     formatFile = function(name, contents) {
         return "require.files[\"" + escapeDoubleQuotes(filename) + "\"] = " + 
                     "function() { return (function() {" +
@@ -78,11 +78,11 @@ var util = require("util"),
     stdFiles = {
         "--jq": {
             name: "jQuery",
-            path: path.join(path.dirname(process.argv[1]), "jquery-1.5.0.js"),
+            path: path.join(path.dirname(process.argv[1]), "lib/jquery-1.5.0.js"),
             extension: "js" },
         "--cs": {
             name: "CoffeeScript",
-            path: path.join(path.dirname(process.argv[1]), "coffeescript-1.0.0.js"),
+            path: path.join(path.dirname(process.argv[1]), "lib/coffeescript-1.0.0.js"),
             extension: "js" }, },
     
     main = function() {
@@ -104,19 +104,24 @@ var util = require("util"),
                     extension = file.extension;
                 } else if (filename.substr(0, 3) !== "../") {
                     filename = "./" + filename;
+                    inputFilename = "./" + inputFilename;
                 };
-                
-                filenames.push(filename);
                 
                 if (extension == "js") {
                     files[filename] = fs.readFileSync(inputFilename, "utf-8");
                 } else if (extension == "coffee") {
-                    files[filename] = require("./coffeescript-1.0.0").
+                    files[filename] = require("./lib/coffeescript-1.0.0").
                         CoffeeScript.
                         compile(fs.readFileSync(inputFilename, "utf-8"));
                 } else {
-                    throw new Error("Unknown file extension: " + extension);
+                    mime = {
+                        "png": "image/png"
+                    }[extension] || "application/octet-stream"
+                    
+                    files[filename = inputFilename] = "exports = \"data:" + mime + ";base64," + fs.readFileSync(inputFilename).toString("base64") + "\";\n";
                 };
+                
+                filenames.push(filename);
             };
             
             return htmlTemplate + formatScript(filenames, files);
@@ -126,5 +131,6 @@ var util = require("util"),
             return ["Usage:", arguments[0], "filenames..."].join(" ");
         };
     };
+    
 
 console.log(main.apply(this, process.argv));

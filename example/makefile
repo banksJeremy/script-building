@@ -1,10 +1,10 @@
-FILES=main.coffee langton.coffee
+FILES=main.coffee langton.coffee image.png
 
 show: clean scriptPage.html dataRedirect.html
 	open scriptPage.html
 
 clean:
-	rm *.html
+	rm -f *.html
 
 scriptPage.html:
 	../scriptPager.js $(FILES) > scriptPage.html
